@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
 CFLAGS =  
-CXXFLAGS =  -g -O3 -std=gnu++11 -Wall -DDEBUG  # -I /opt/apl/gromacs2019.2/include/ -I /misc/home/tnagai/src/cxx-prettyprint
+CXXFLAGS =  -g -O3 -std=gnu++11 -Wall #-DDEBUG  # -I /opt/apl/gromacs2019.2/include/ -I /misc/home/tnagai/src/cxx-prettyprint
 LOADLIBES =  
 #LDLIBS_BOOST =  -lboost_program_options
 #LDLIBS_GROMACS =  -L /opt/apl/gromacs2019.2/lib64/ -lgromacs 
