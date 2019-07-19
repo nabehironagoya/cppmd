@@ -9,7 +9,8 @@ LOADLIBES =
 OBJS1 =   read_gro.o 
 OBJS2 =   string.o 
 OBJS3 =   mdrun.o 
-OBJ_NAMES = $(OBJS1) $(OBJS2) $(OBJS3)
+OBJS4 =   math.o 
+OBJ_NAMES = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJ4)
 
 EXE_NAME1 = cppmd
 EXE_NAMES = $(EXE_NAME1)  

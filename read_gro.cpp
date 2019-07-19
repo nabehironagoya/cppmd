@@ -16,7 +16,7 @@ Gro::~Gro(){
     cnt--;
 }
 
-void Gro::set_params(int resnr, string resname, string atomname, int num, float x, float y, float z){
+void Gro::set_params(int resnr, string resname, string atomname, int num, double x, double y, double z){
     this->resnr = resnr;
     this->resname = trim(resname, ' ');
     this->atomname = trim(atomname, ' ');
@@ -44,7 +44,7 @@ int get_n_atoms(string grofile){
     return n_atoms;
 }
 
-void read_gro(string grofile, int n_atoms,  Gro *gro, float *box){
+void read_gro(string grofile, int n_atoms,  Gro *gro, double *box){
     string buf;
     ifstream ifs(grofile);
     getline(ifs, buf);
@@ -73,7 +73,7 @@ void read_gro(string grofile, int n_atoms,  Gro *gro, float *box){
 //int main(int argc, char **argv){
 //    string gro = argv[1];
 //    int n_atoms = get_n_atoms(gro);
-//    float *box = new float[3];
+//    double *box = new double[3];
 //    Gro *gro = new Gro[n_atoms];
 //
 //    read_gro(gro,n_atoms, gro, box);

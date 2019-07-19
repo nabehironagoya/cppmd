@@ -4,6 +4,8 @@
 #include <vector>
 using namespace std;
 
+double mod(double, double);
+
 class Atom{
     static int n_atoms;
 
@@ -11,13 +13,13 @@ class Atom{
     int resnr;
     string resname;
     string atomname;
-    float mass;
-    float epsilon;
-    float sigma;
+    double mass;
+    double epsilon;
+    double sigma;
 
-    float r[3];
-    float v[3];
-    float f[3];
+    double r[3];
+    double v[3];
+    double f[3];
 
 public:
     static int get_n_atoms(){return n_atoms;}
@@ -41,32 +43,33 @@ public:
     void set_resnr(int resnr){this->resnr = resnr;}
     void set_resname(string resname){this->resname = resname;}
     void set_atomname(string atomname){this->atomname = atomname;}
-    void set_mass(float mass){this->mass = mass;}
-    void set_epsilon(float epsilon){this->epsilon = epsilon;}
-    void set_sigma(float sigma){this->sigma = sigma;}
+    void set_mass(double mass){this->mass = mass;}
+    void set_epsilon(double epsilon){this->epsilon = epsilon;}
+    void set_sigma(double sigma){this->sigma = sigma;}
 
     int get_num(){return this->num;}
     int get_resnr(int resnr){return this->resnr;}
     string get_resname(string resname){return this->resname;}
     string get_atomname(){return this->atomname;}
-    float get_mass(){return this->mass;}
-    float get_epsilon(){return this->epsilon;}
-    float get_sigma(){return this->sigma;}
+    double get_mass(){return this->mass;}
+    double get_epsilon(){return this->epsilon;}
+    double get_sigma(){return this->sigma;}
     
-    float get_r(int xyz){return this->r[xyz];}
-    float get_v(int xyz){return this->v[xyz];}
-    float get_f(int xyz){return this->f[xyz];}
-    void set_r(int xyz, float r){this->r[xyz] = r;}
-    void set_v(int xyz, float v){this->v[xyz] = v;}
-    void add_f(int xyz, float f){this->f[xyz] += f;}
+    double get_r(int xyz){return this->r[xyz];}
+    double get_v(int xyz){return this->v[xyz];}
+    double get_f(int xyz){return this->f[xyz];}
+    void set_r(int xyz, double r){this->r[xyz] = r;}
+    void set_v(int xyz, double v){this->v[xyz] = v;}
+    void add_f(int xyz, double f){this->f[xyz] += f;}
 
-    void integrate_r(float dt){
+    void integrate_r(double dt, double *box){
         for (int xyz=0; xyz<3; xyz++){
             this->r[xyz] += this->v[xyz]*dt;
+			this->r[xyz] = mod(this->r[xyz], box[xyz]);
         }
     }
 
-    void integrate_v(float dt){
+    void integrate_v(double dt){
         for (int xyz=0; xyz<3; xyz++){
         this->v[xyz] += 0.5*(this->f[xyz]*dt)/(this->mass);
         }
@@ -82,12 +85,12 @@ public:
 // for interaction between 2 particles
 class Itp{
     int i, j;
-    float eps_ij;
-    float sig_ij;
-    float d_ij;
-    float p_ij;
-    float f_ij[3];
-    float r_ij[3];
+    double eps_ij;
+    double sig_ij;
+    double d_ij;
+    double p_ij;
+    double f_ij[3];
+    double r_ij[3];
 
 public:
     Itp(){}
@@ -100,27 +103,28 @@ public:
         this->sig_ij = 0.5*(atom[i].get_sigma() + atom[j].get_epsilon());
     }
 
-    float get_eps_ij(){return this->eps_ij;}
-    float get_sig_ij(){return this->sig_ij;}
-    void set_r_ij(Atom *atom, float *box){
+    double get_eps_ij(){return this->eps_ij;}
+    double get_sig_ij(){return this->sig_ij;}
+
+    void set_r_ij(Atom *atom, double *box){
         // box??
         this->d_ij = 0.0;
         for (int xyz=0; xyz<3; xyz++){
-            this->r_ij[xyz] = atom[this->j].get_r(xyz) - atom[this->i].get_r(xyz);
+            this->r_ij[xyz] = atom[this->j].get_r(xyz) - atom[this->i].get_r(xyz) - box[xyz]*round((atom[this->j].get_r(xyz) - atom[this->i].get_r(xyz))/box[xyz]);
             this->d_ij += pow(r_ij[xyz], 2);
         }
         this->d_ij = sqrt(this->d_ij);
     }
 
-    void set_f_ij(Atom *atom, float *box){
+    void set_f_ij(Atom *atom, double *box){
         for (int xyz=0; xyz<3; xyz++){
-            this->f_ij[xyz] = 4*(this->eps_ij/this->sig_ij)*(12*pow(this->sig_ij/this->d_ij, 13) - 6*pow(this->sig_ij/this->d_ij, 7))*(r_ij[xyz]/this->d_ij);
+            this->f_ij[xyz] = 4*(this->eps_ij/this->sig_ij)*(12*pow(this->sig_ij/this->d_ij, 13) - 6*pow(this->sig_ij/this->d_ij, 7))*(this->r_ij[xyz]/this->d_ij);
             atom[i].add_f(xyz, this->f_ij[xyz]);
             atom[j].add_f(xyz, -this->f_ij[xyz]);
         }
     }
 
-    float set_p_ij(Atom *atom, float *box){
+    double set_p_ij(Atom *atom, double *box){
             this->p_ij = 4*this->eps_ij*(pow(this->sig_ij/this->d_ij, 12) - pow(this->sig_ij/this->d_ij, 6));
             return this->p_ij;
     }

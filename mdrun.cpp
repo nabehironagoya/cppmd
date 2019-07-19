@@ -1,21 +1,24 @@
 #include "mdrun.hpp"
 #include "read_gro.hpp"
 #include <cmath>
+#include <fstream>
 using namespace std;
 int Atom::n_atoms = 0;
 
 // from read_gro.cpp
 int get_n_atoms(string);
-void read_gro(string, int, Gro*, float*);
+void read_gro(string, int, Gro*, double*);
 
 
 int main(){
     
     string grofile = "sample.gro";
-    float dt = 0.001;
+    double dt = 0.001;
     int n_frames = 10000;
     int n_atoms = get_n_atoms(grofile);
-    float box[3];
+    double box[3];
+
+	ofstream ofs_coord("coord.xyz");
 
     Gro *gro = new Gro[n_atoms];
     Atom *atom = new Atom[n_atoms];
@@ -45,8 +48,8 @@ int main(){
     /* start md */
 
     // calc force at 0 step    
-    float pot = 0.0;
-    float kin = 0.0;
+    double pot = 0.0;
+    double kin = 0.0;
     for (int i=0; i<n_atoms; i++){
         for (int j=0; j<i; j++){
             itp[i][j].set_r_ij(atom, box);
@@ -63,7 +66,13 @@ int main(){
         cout << frame <<  " " << pot << " " << kin << " " <<  pot + kin  << endl;
         for (int i=0; i<n_atoms; i++){
             atom[i].integrate_v(dt);
-            atom[i].integrate_r(dt);
+        }
+
+        for (int i=0; i<n_atoms; i++){
+            atom[i].integrate_r(dt, box);
+        }
+
+        for (int i=0; i<n_atoms; i++){
             atom[i].reset_f();
         }
 
@@ -85,7 +94,22 @@ int main(){
         for (int i=0; i<n_atoms; i++){
             atom[i].integrate_v(dt);
         }
+
+		//vmd
+		ofs_coord << n_atoms << endl;
+		ofs_coord << dt*frame << endl;
+		for (int i=0; i<n_atoms; i++){
+				ofs_coord << atom[i].get_atomname() << " "
+						<< atom[i].get_r(0) << " " 
+						<< atom[i].get_r(1) << " " 
+						<< atom[i].get_r(2) << endl;
+		}
+
+
     }
+
+	// end of md
+
 
     delete [] atom;
     return 0;
