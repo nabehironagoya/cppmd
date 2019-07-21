@@ -53,26 +53,18 @@ int main(){
     for (int i=0; i<n_atoms; i++){
         for (int j=0; j<i; j++){
             itp[i][j].set_r_ij(atom, box);
-            itp[i][j].set_f_ij(atom, box);
-            pot += itp[i][j].set_p_ij(atom, box);
+            itp[i][j].set_f_ij(atom);
+            pot += itp[i][j].set_p_ij(atom);
         }
+        kin += atom[i].get_kin();
 
-        for (int xyz=0; xyz<3; xyz++){
-            kin += 0.5*atom[i].get_mass()*pow(atom[i].get_v(xyz), 2);
-        }
     }
 
     for (int frame=0; frame<n_frames; frame++){
         cout << frame <<  " " << pot << " " << kin << " " <<  pot + kin  << endl;
         for (int i=0; i<n_atoms; i++){
             atom[i].integrate_v(dt);
-        }
-
-        for (int i=0; i<n_atoms; i++){
             atom[i].integrate_r(dt, box);
-        }
-
-        for (int i=0; i<n_atoms; i++){
             atom[i].reset_f();
         }
 
@@ -82,13 +74,10 @@ int main(){
         for (int i=0; i<n_atoms; i++){
             for (int j=0; j<i; j++){
                 itp[i][j].set_r_ij(atom, box);
-                itp[i][j].set_f_ij(atom, box);
-                pot += itp[i][j].set_p_ij(atom, box);
+                itp[i][j].set_f_ij(atom);
+                pot += itp[i][j].set_p_ij(atom);
             }
-
-            for (int xyz=0; xyz<3; xyz++){
-                kin += 0.5*atom[i].get_mass()*pow(atom[i].get_v(xyz), 2);
-            }
+            kin += atom[i].get_kin();
         }
 
         for (int i=0; i<n_atoms; i++){

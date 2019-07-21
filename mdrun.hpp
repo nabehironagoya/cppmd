@@ -80,6 +80,14 @@ public:
             this->f[xyz] = 0.0;
         }
     }
+
+    double get_kin(){
+        double kin = 0.0;
+        for (int xyz=0; xyz<3; xyz++){
+            kin += 0.5*(this->mass)*pow(this->v[xyz], 2);
+        }
+        return kin;
+    }
 };
 
 // for interaction between 2 particles
@@ -116,15 +124,15 @@ public:
         this->d_ij = sqrt(this->d_ij);
     }
 
-    void set_f_ij(Atom *atom, double *box){
+    void set_f_ij(Atom *atom){
         for (int xyz=0; xyz<3; xyz++){
             this->f_ij[xyz] = 4*(this->eps_ij/this->sig_ij)*(12*pow(this->sig_ij/this->d_ij, 13) - 6*pow(this->sig_ij/this->d_ij, 7))*(this->r_ij[xyz]/this->d_ij);
-            atom[i].add_f(xyz, this->f_ij[xyz]);
-            atom[j].add_f(xyz, -this->f_ij[xyz]);
+            atom[this->i].add_f(xyz, -this->f_ij[xyz]);
+            atom[this->j].add_f(xyz, this->f_ij[xyz]);
         }
     }
 
-    double set_p_ij(Atom *atom, double *box){
+    double set_p_ij(Atom *atom){
             this->p_ij = 4*this->eps_ij*(pow(this->sig_ij/this->d_ij, 12) - pow(this->sig_ij/this->d_ij, 6));
             return this->p_ij;
     }
