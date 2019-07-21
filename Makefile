@@ -23,10 +23,10 @@ $(EXE_NAME1): $(OBJ_NAMES)
 
 .PHONY: clean uninstall rebuild 
 clean:
-	    rm -f $(OBJS1) $(OBJS2)  $(OBJS3)
+	    rm -f $(OBJ_NAMES)
 
 uninstall:
-	    rm -f $(OBJS1) $(OBJS2) $(OBJS3) $(EXE_NAMES)
+	    rm -f $(OBJ_NAMES) $(EXE_NAMES)
 
 rebuild: uninstall $(EXE_NAMES) 
 

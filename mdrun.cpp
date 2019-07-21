@@ -16,6 +16,7 @@ int main(){
     double dt = 0.001;
     int n_frames = 10000;
     int n_atoms = get_n_atoms(grofile);
+    double r_c = 2.0;
     double box[3];
 
 	ofstream ofs_coord("coord.xyz");
@@ -53,8 +54,8 @@ int main(){
     for (int i=0; i<n_atoms; i++){
         for (int j=0; j<i; j++){
             itp[i][j].set_r_ij(atom, box);
-            itp[i][j].set_f_ij(atom);
-            pot += itp[i][j].set_p_ij(atom);
+            itp[i][j].set_f_ij(atom, r_c);
+            pot += itp[i][j].set_p_ij(atom, r_c);
         }
         kin += atom[i].get_kin();
 
@@ -70,18 +71,18 @@ int main(){
 
         // calc force at frame step
         pot = 0.0;
-        kin = 0.0;
         for (int i=0; i<n_atoms; i++){
             for (int j=0; j<i; j++){
                 itp[i][j].set_r_ij(atom, box);
-                itp[i][j].set_f_ij(atom);
-                pot += itp[i][j].set_p_ij(atom);
+                itp[i][j].set_f_ij(atom, r_c);
+                pot += itp[i][j].set_p_ij(atom, r_c);
             }
-            kin += atom[i].get_kin();
         }
 
+        kin = 0.0;
         for (int i=0; i<n_atoms; i++){
             atom[i].integrate_v(dt);
+            kin += atom[i].get_kin();
         }
 
 		//vmd

@@ -124,16 +124,23 @@ public:
         this->d_ij = sqrt(this->d_ij);
     }
 
-    void set_f_ij(Atom *atom){
-        for (int xyz=0; xyz<3; xyz++){
-            this->f_ij[xyz] = 4*(this->eps_ij/this->sig_ij)*(12*pow(this->sig_ij/this->d_ij, 13) - 6*pow(this->sig_ij/this->d_ij, 7))*(this->r_ij[xyz]/this->d_ij);
-            atom[this->i].add_f(xyz, -this->f_ij[xyz]);
-            atom[this->j].add_f(xyz, this->f_ij[xyz]);
+    void set_f_ij(Atom *atom, double r_c){
+        if (this->d_ij < r_c){
+            for (int xyz=0; xyz<3; xyz++){
+                this->f_ij[xyz] = 4*(this->eps_ij/this->sig_ij)*(12*pow(this->sig_ij/this->d_ij, 13) - 6*pow(this->sig_ij/this->d_ij, 7))*(this->r_ij[xyz]/this->d_ij);
+                atom[this->i].add_f(xyz, -this->f_ij[xyz]);
+                atom[this->j].add_f(xyz, this->f_ij[xyz]);
+            }
         }
     }
 
-    double set_p_ij(Atom *atom){
+    double set_p_ij(Atom *atom, double r_c){
+        if (this->d_ij < r_c){
             this->p_ij = 4*this->eps_ij*(pow(this->sig_ij/this->d_ij, 12) - pow(this->sig_ij/this->d_ij, 6));
             return this->p_ij;
+        }else{
+            return 0;
+        }
+        
     }
 };
