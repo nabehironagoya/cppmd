@@ -12,22 +12,29 @@ void read_gro(string, int, Gro*, double*);
 
 int main(){
     
+	//declarations
     string grofile = "sample.gro";
     double dt = 0.001;
     int n_frames = 10000;
     int n_atoms = get_n_atoms(grofile);
     double r_c = 2.0;
     double box[3];
+    double pot = 0.0;
+    double kin = 0.0;
+	double T, P, vir;
+	const double R = 0.00831; // kJ/mol K
+
 
 	ofstream ofs_coord("coord.xyz");
+	ofstream ofs_energy("energy.dat");
 
     Gro *gro = new Gro[n_atoms];
     Atom *atom = new Atom[n_atoms];
     vector<vector<Itp> > itp(n_atoms, vector<Itp>(n_atoms, Itp()));
 
-    read_gro(grofile, n_atoms, gro, box);
 
     // load atom info from <.gro>
+    read_gro(grofile, n_atoms, gro, box);
     for (int i=0; i<n_atoms;i++){
         for (int xyz=0; xyz<3; xyz++){
             atom[i].set_r(xyz, gro[i].get_r(xyz));
@@ -49,8 +56,8 @@ int main(){
     /* start md */
 
     // calc force at 0 step    
-    double pot = 0.0;
-    double kin = 0.0;
+    pot = 0.0;
+    kin = 0.0;
     for (int i=0; i<n_atoms; i++){
         for (int j=0; j<i; j++){
             itp[i][j].set_r_ij(atom, box);
@@ -85,6 +92,26 @@ int main(){
             kin += atom[i].get_kin();
         }
 
+		// energy calc
+		T = (2.0*kin)/(3.0*3*n_atoms*R);
+		vir = 0.0;
+        for (int i=0; i<n_atoms; i++){
+            for (int j=0; j<i; j++){
+				for (int xyz=0; xyz<3 ; xyz++){
+					vir += atom[i].get_r(xyz)*atom[i].get_f(xyz);
+				}
+			}
+		}
+		P = (2.0*kin + vir)/(3*box[0]*box[1]*box[2]);
+
+		// energy
+		ofs_energy << dt*frame << " "
+		           << kin + pot << " "
+		           << pot << " "
+		           << T << " "
+		           << P << " "
+		           << vir << " "
+		           << " " << endl; 
 		//vmd
 		ofs_coord << n_atoms << endl;
 		ofs_coord << dt*frame << endl;
