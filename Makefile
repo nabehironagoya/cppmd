@@ -6,7 +6,7 @@ LOADLIBES =
 #LDLIBS_BOOST =  -lboost_program_options
 #LDLIBS_GROMACS =  -L /opt/apl/gromacs2019.2/lib64/ -lgromacs 
 
-OBJS1 =   read_gro.o 
+OBJS1 =   gro_util.o 
 OBJS2 =   string.o 
 OBJS3 =   math.o 
 OBJS4 =   mdrun.o 

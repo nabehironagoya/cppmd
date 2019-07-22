@@ -1,5 +1,5 @@
 #include "mdrun.hpp"
-#include "read_gro.hpp"
+#include "gro_util.hpp"
 #include <cmath>
 #include <fstream>
 using namespace std;
@@ -8,6 +8,7 @@ int Atom::n_atoms = 0;
 // from read_gro.cpp
 int get_n_atoms(string);
 void read_gro(string, int, Gro*, double*);
+void write_gro(string, int, Gro*, double*);
 
 
 int main(){
@@ -44,7 +45,6 @@ int main(){
         atom[i].set_resname(gro[i].get_resname());
         atom[i].set_resnr(gro[i].get_resnr());
     }
-    delete [] gro;
 
     // initialize Itp 
     for (int i=0; i<n_atoms; i++){
@@ -125,9 +125,22 @@ int main(){
 
     }
 
+    for (int i=0; i<n_atoms;i++){
+		gro[i].set_params(atom[i].get_resnr(),
+		               atom[i].get_resname(),
+					   atom[i].get_atomname(),
+					   atom[i].get_num(),
+					   atom[i].get_r(0),
+					   atom[i].get_r(1),
+					   atom[i].get_r(2)
+					  );
+    }
+	write_gro("out.gro", n_atoms, gro, box);
+
 	// end of md
 
 
+    delete [] gro;
     delete [] atom;
     return 0;
 }

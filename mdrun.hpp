@@ -48,8 +48,8 @@ public:
     void set_sigma(double sigma){this->sigma = sigma;}
 
     int get_num(){return this->num;}
-    int get_resnr(int resnr){return this->resnr;}
-    string get_resname(string resname){return this->resname;}
+    int get_resnr(){return this->resnr;}
+    string get_resname(){return this->resname;}
     string get_atomname(){return this->atomname;}
     double get_mass(){return this->mass;}
     double get_epsilon(){return this->epsilon;}
