@@ -36,9 +36,6 @@ public:
     this->mass = 1.0;
     this->epsilon = 0.5;
     this->sigma = 0.5;
-//    this->mass = 20.18;
-//    this->epsilon = 0.301;
-//    this->sigma = 0.274;
     }
 
     ~Atom(){n_atoms--;}
@@ -64,6 +61,19 @@ public:
     void set_r(int xyz, double r){this->r[xyz] = r;}
     void set_v(int xyz, double v){this->v[xyz] = v;}
     void add_f(int xyz, double f){this->f[xyz] += f;}
+
+    void integrate_r(double dt, double *box){
+        for (int xyz=0; xyz<3; xyz++){
+            this->r[xyz] += this->v[xyz]*dt;
+			this->r[xyz] = mod(this->r[xyz], box[xyz]);
+        }
+    }
+
+    void integrate_v(double dt){
+        for (int xyz=0; xyz<3; xyz++){
+        this->v[xyz] += 0.5*(this->f[xyz]*dt)/(this->mass);
+        }
+    }
 
     void reset_f(){
         for (int xyz=0; xyz<3; xyz++){

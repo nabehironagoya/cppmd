@@ -16,21 +16,13 @@ int main(){
 	//declarations
     string grofile = "sample.gro";
     double dt = 0.001;
-    int n_frames = 100000;
+    int n_frames = 10000;
     int n_atoms = get_n_atoms(grofile);
     double r_c = 2.0;
     double box[3];
     double pot = 0.0;
     double kin = 0.0;
-	double T = 0.0;
-	double T_ref = 100.0;
-	double Q = 1.0;
-	double P = 0.0;
-	double vir = 0.0;
-	double zeta = 0.0;
-	double eta = 0.0;
-	double H = 0.0;
-	double s = 0.0;
+	double T, P, vir;
 	const double R = 0.00831; // kJ/mol K
 
 
@@ -75,36 +67,14 @@ int main(){
         kin += atom[i].get_kin();
 
     }
-	
-	// energy calc at 0 step
-	T = (2.0*kin)/(3.0*n_atoms*R);
-	vir = 0.0;
-    for (int i=0; i<n_atoms; i++){
-        for (int j=0; j<i; j++){
-			for (int xyz=0; xyz<3 ; xyz++){
-				vir += atom[i].get_r(xyz)*atom[i].get_f(xyz);
-			}
-		}
-	}
-	P = (2.0*kin + vir)/(3*box[0]*box[1]*box[2]);
-	H = kin + pot + 0.5*Q*pow(zeta, 2) + 3*n_atoms*R*T_ref*eta;
 
     for (int frame=0; frame<n_frames; frame++){
-        cout << frame <<" " <<  H  << endl;
-
+        cout << frame <<  " " << pot << " " << kin << " " <<  pot + kin  << endl;
         for (int i=0; i<n_atoms; i++){
-			for (int xyz=0; xyz<3; xyz++){
-				atom[i].set_v(xyz, atom[i].get_v(xyz)*exp(-0.5*zeta*dt));
-				atom[i].set_v(xyz, atom[i].get_v(xyz) + atom[i].get_f(xyz)*0.5*dt/atom[i].get_mass());
-				atom[i].set_r(xyz, atom[i].get_r(xyz) + atom[i].get_v(xyz)*dt);
-				atom[i].set_r(xyz, mod(atom[i].get_r(xyz), box[xyz]));
-			}
+            atom[i].integrate_v(dt);
+            atom[i].integrate_r(dt, box);
             atom[i].reset_f();
         }
-
-		zeta = zeta + (2*kin - 3*n_atoms*R*T_ref)*(dt/Q);
-		eta = eta + zeta*dt;
-		s = exp(eta);
 
         // calc force at frame step
         pot = 0.0;
@@ -115,19 +85,15 @@ int main(){
                 pot += itp[i][j].set_p_ij(atom, r_c);
             }
         }
-/* mark */
 
         kin = 0.0;
         for (int i=0; i<n_atoms; i++){
-			for (int xyz=0; xyz<3; xyz++){
-				atom[i].set_v(xyz, atom[i].get_v(xyz) + atom[i].get_f(xyz)*0.5*dt/atom[i].get_mass());
-				atom[i].set_v(xyz, atom[i].get_v(xyz)*exp(-0.5*zeta*dt));
-			}
+            atom[i].integrate_v(dt);
             kin += atom[i].get_kin();
         }
 
 		// energy calc
-		T = (2.0*kin)/(3.0*n_atoms*R);
+		T = (2.0*kin)/(3.0*3*n_atoms*R);
 		vir = 0.0;
         for (int i=0; i<n_atoms; i++){
             for (int j=0; j<i; j++){
@@ -137,14 +103,12 @@ int main(){
 			}
 		}
 		P = (2.0*kin + vir)/(3*box[0]*box[1]*box[2]);
-		H = kin + pot + 0.5*Q*pow(zeta, 2) + 3*n_atoms*R*T_ref*eta;
 
 		// energy
 		ofs_energy << dt*frame << " "
-		           << H << " "
+		           << kin + pot << " "
 		           << pot << " "
 		           << T << " "
-		           << s << " "
 		           << P << " "
 		           << vir << " "
 		           << " " << endl; 
